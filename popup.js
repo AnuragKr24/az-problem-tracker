@@ -39,6 +39,9 @@ function addNewBookmark(bookmark){
     newBookmark.append(bookmarkTitle);
     newBookmark.append(bookmarkControls);
 
+    newBookmark.setAttribute("url", bookmark.url);
+    newBookmark.setAttribute("bookmark-id", bookmark.id);
+
     bookmarkSection.appendChild(newBookmark);
 }
 
@@ -49,9 +52,24 @@ function setControlAttributes(src, handler, parentDiv){
     parentDiv.appendChild(controlElement);
 }
 
-function onPlay(){
+function onPlay(event){
+
+    const problemUrl = event.target.parentNode.parentNode.getAttribute("url");
+    window.open(problemUrl, "_blank");
 }
 
-function onDelete(){
+function onDelete(event){
+    const bookmarkItem = event.target.parentNode.parentNode;
+    const idToRemove = bookmarkItem.getAttribute("bookmark-id");
+    bookmarkItem.remove();
+    
+    deleteItemFromStorage(idToRemove);
+}
 
+function deleteItemFromStorage(idToRemove){
+    chrome.storage.sync.get([AZ_PROBLEM_KEY], (data) => {
+        const currentBookmarks = data[AZ_PROBLEM_KEY] || [];
+        const updatedBookmarks = currentBookmarks.filter((bookmark) => bookmark.id !== idToRemove);
+        chrome.storage.sync.set({AZ_PROBLEM_KEY: updatedBookmarks});
+    });
 }
